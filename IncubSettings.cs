@@ -12,8 +12,15 @@ namespace Incubie
     public class IncubSettings : ISettings
     {
         public ToggleNode Enable { get; set; } = new ToggleNode(true);
+        [Menu("Show experience per monster")]
+        public ToggleNode ShowExpPerMonster { get; set; } = new ToggleNode(true);
 
-        [Menu("Example check box", "This check box disable some functionality")]
-        public ToggleNode MyCheckboxOption { get; set; } = new ToggleNode(true);
+        [Menu("Refresh gem and incubator info")]
+        public ButtonNode Refresh { get; set; } = new ButtonNode();
+
+        // [Menu("Obscured Incubator")]
+        // public RangeNode<int> Obscured { get; set; } = new RangeNode<int>(0,0,9000);
+        // [Menu("Geomancer's Incubator")]
+        // public RangeNode<int> Geomancer { get; set; } = new RangeNode<int>();
     }
 }

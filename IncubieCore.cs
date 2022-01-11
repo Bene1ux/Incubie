@@ -39,13 +39,18 @@ namespace Incubie
             {"Celestial Jeweller's Incubator", 8000}
         };
 
+        public override void OnLoad()
+        {
+            Settings.Refresh.OnPressed = () =>
+            {
+                Refresh();
+                DebugWindow.LogMsg("Refreshed gem and incubator info");
+            };
+            base.OnLoad();
+        }
+
         public override void Render()
         {
-            if (!Settings.MyCheckboxOption)
-            {
-                return;
-            }
-
             // if (GameController.IngameState.IngameUi.InventoryPanel.IsVisible)
             // {
             //     foreach (var inventory in GameController.IngameState.Data.ServerData.PlayerInventories)
@@ -72,7 +77,7 @@ namespace Incubie
                     .ExperienceToNextLevel;
                 gemExperienceGained = startingExperienceToNextLevel - experienceToNextLevel;
                 var gemMilExpGained = (float) gemExperienceGained / 1000000;
-                Graphics.DrawText(gemMilExpGained.ToString(""), new Vector2(200, 200), Color.White, 30);
+                Graphics.DrawText(gemMilExpGained.ToString(""), new Vector2(200, 200));
             }
 
             if (foundIncub)
@@ -89,7 +94,7 @@ namespace Incubie
                 var incubatorKills = (ushort) mods.IncubatorKills;
                 killed = (ushort) (incubatorKills - startingIncubatorKills);
                 Graphics.DrawText(killed.ToString(), new Vector2(200, 230));
-                if (killed != 0)
+                if (killed != 0 && Settings.ShowExpPerMonster)
                 {
                     gemExpPerMonster = (float) gemExperienceGained / killed;
                     Graphics.DrawText(gemExpPerMonster.ToString(""), new Vector2(200, 260));
@@ -165,17 +170,26 @@ namespace Incubie
 
         public override void AreaChange(AreaInstance area)
         {
-            DebugWindow.LogMsg($"#legion {gemExperienceGained},{killed},{gemExpPerMonster}", 20f);
-            if (!area.IsHideout && !area.IsTown && !area.HasWaypoint)
+            if (killed > 0)
             {
-                foundGem = FindGem();
-                foundIncub = FindIncub();
+                DebugWindow.LogMsg($"#legion {gemExperienceGained},{killed},{gemExpPerMonster}", 20f);
+            }
+            
+            if (!area.IsHideout && !area.IsTown)
+            {
+                Refresh();
             }
             else
             {
                 foundGem = false;
                 foundIncub = false;
             }
+        }
+
+        private void Refresh()
+        {
+            foundGem = FindGem();
+            foundIncub = FindIncub();
         }
     }
 }

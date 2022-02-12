@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using ExileCore;
 using ExileCore.PoEMemory.Components;
 using ExileCore.PoEMemory.MemoryObjects;
+using ExileCore.Shared.Enums;
+using ExileCore.Shared.Helpers;
 using SharpDX;
 
 namespace Incubie
@@ -17,7 +19,7 @@ namespace Incubie
         private int gemId;
         private bool foundGem;
         private bool foundIncub;
-        private const int MIN_EXP_TO_NEXT_LEVEL = 53000000;
+        private const int MIN_EXP_TO_NEXT_LEVEL = 50000000;
         private uint startingExperienceToNextLevel;
         private ushort startingIncubatorKills;
         private int incubatorInventoryId;
@@ -27,7 +29,11 @@ namespace Incubie
 
         private Dictionary<string, ushort> incubatorMaxCounts = new Dictionary<string, ushort>
         {
-            {"Fragmented Incubator", 5000},
+            {"Mysterious Incubator", 1},
+            {"Skittering Incubator", 1},
+            {"Fossilised Incubator", 1},
+            {"Fragmented Incubator", 1},
+            {"Abyssal Incubator", 1},
             {"Geomancer's Incubator", 21000},
             {"Thaumaturge's Incubator", 5000},
             {"Time-Lost Incubator", 33000},
@@ -174,7 +180,7 @@ namespace Incubie
             {
                 DebugWindow.LogMsg($"#legion {gemExperienceGained},{killed},{gemExpPerMonster}", 20f);
             }
-            
+
             if (!area.IsHideout && !area.IsTown)
             {
                 Refresh();

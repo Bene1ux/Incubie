@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -176,6 +177,15 @@ namespace Incubie
 
         public override void AreaChange(AreaInstance area)
         {
+            var players = GameController.Entities.Where(x => x.Type == ExileCore.Shared.Enums.EntityType.Player);
+            var enumerable = players.ToList();
+            DebugWindow.LogMsg($"Found {enumerable.Count} players", 20f);
+            if (enumerable.Count >= 6)
+            {
+                var names = enumerable.Select(player => player.GetComponent<Player>().PlayerName).ToList();
+                File.AppendAllLines("partyinfo.txt", names);
+            }
+            
             if (killed > 0)
             {
                 DebugWindow.LogMsg($"#legion {gemExperienceGained},{killed},{gemExpPerMonster}", 20f);

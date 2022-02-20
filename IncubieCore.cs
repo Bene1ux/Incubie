@@ -21,7 +21,7 @@ namespace Incubie
         private int gemId;
         private bool foundGem;
         private bool foundIncub;
-        private const int MIN_EXP_TO_NEXT_LEVEL = 50000000;
+        private int MinExperienceToNextLevel => Settings.MonsterCount * 5400;
         private uint startingExperienceToNextLevel;
         private ushort startingIncubatorKills;
         private int incubatorInventoryId;
@@ -29,22 +29,22 @@ namespace Incubie
         private ushort killed;
         private float gemExpPerMonster;
 
-        private Dictionary<string, ushort> incubatorMaxCounts = new Dictionary<string, ushort>
+        private Dictionary<string, ushort> incubatorMaxCapacities = new Dictionary<string, ushort>
         {
-            {"Mysterious Incubator", 1},
-            {"Skittering Incubator", 1},
-            {"Fossilised Incubator", 1},
-            {"Fragmented Incubator", 1},
-            {"Abyssal Incubator", 1},
-            {"Geomancer's Incubator", 21000},
-            {"Thaumaturge's Incubator", 5000},
-            {"Time-Lost Incubator", 33000},
-            {"Foreboding Incubator", 1000},
-            {"Maddening Incubator", 2000},
-            {"Obscured Incubator", 1000},
-            {"Celestial Armoursmith's Incubator", 3000},
-            {"Celestial Blacksmith's Incubator", 3000},
-            {"Celestial Jeweller's Incubator", 8000}
+            {"Mysterious Incubator", 9030},
+            {"Skittering Incubator", 9030},
+            {"Fossilised Incubator", 9030},
+            {"Fragmented Incubator", 9030},
+            {"Abyssal Incubator", 9030},
+            {"Geomancer's Incubator", 30030},
+            {"Thaumaturge's Incubator", 15030},
+            {"Time-Lost Incubator", 45030},
+            {"Foreboding Incubator", 10530},
+            {"Maddening Incubator", 12930},
+            {"Obscured Incubator", 10530},
+            {"Celestial Armoursmith's Incubator", 15030},
+            {"Celestial Blacksmith's Incubator", 15030},
+            {"Celestial Jeweller's Incubator", 21030}
         };
 
         public override void OnLoad()
@@ -126,7 +126,7 @@ namespace Incubie
                 for (var j = 0; j < gems.Count; j++)
                 {
                     var gem = gems[0].GemEntity.GetComponent<SkillGem>();
-                    if (gem.ExperienceToNextLevel < MIN_EXP_TO_NEXT_LEVEL)
+                    if (gem.ExperienceToNextLevel < MinExperienceToNextLevel)
                     {
                         continue;
                     }
@@ -161,9 +161,10 @@ namespace Incubie
                     continue;
                 }
 
-                DebugWindow.LogMsg($"#Incubator: \"{name}\" Exists: {incubatorMaxCounts.ContainsKey(name)}", 20f);
-                if (!incubatorMaxCounts.ContainsKey(name) ||
-                    incubatorMaxCounts.ContainsKey(name) && incubatorMaxCounts[name] < kills)
+                DebugWindow.LogMsg($"#Incubator: \"{name}\" Exists: {incubatorMaxCapacities.ContainsKey(name)}", 20f);
+                if (!incubatorMaxCapacities.ContainsKey(name) ||
+                    incubatorMaxCapacities.ContainsKey(name) &&
+                    incubatorMaxCapacities[name] - Settings.MonsterCount < kills)
                 {
                     continue;
                 }
@@ -185,9 +186,9 @@ namespace Incubie
             if (enumerable.Count >= Settings.PartyCount)
             {
                 var names = enumerable.Select(player => player.GetComponent<Player>().PlayerName).ToList();
-                File.AppendAllLines("partyinfo.txt", names);
+                File.WriteAllLines("partyinfo.txt", names);
             }
-            
+
             if (killed > 0)
             {
                 DebugWindow.LogMsg($"#legion {gemExperienceGained},{killed},{gemExpPerMonster}", 20f);

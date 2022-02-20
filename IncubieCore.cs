@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ExileCore;
 using ExileCore.PoEMemory.Components;
@@ -177,6 +178,7 @@ namespace Incubie
 
         public override void AreaChange(AreaInstance area)
         {
+            Thread.Sleep(1000);
             var players = GameController.Entities.Where(x => x.Type == ExileCore.Shared.Enums.EntityType.Player);
             var enumerable = players.ToList();
             DebugWindow.LogMsg($"Found {enumerable.Count} players", 20f);

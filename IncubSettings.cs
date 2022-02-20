@@ -20,6 +20,8 @@ namespace Incubie
 
         [Menu("Pause")]
         public RangeNode<int> PauseTime { get; set; } = new RangeNode<int>(200,0,5000);
+        [Menu("Party count")]
+        public RangeNode<int> PartyCount { get; set; } = new RangeNode<int>(6, 1, 6);
         // [Menu("Geomancer's Incubator")]
         // public RangeNode<int> Geomancer { get; set; } = new RangeNode<int>();
     }

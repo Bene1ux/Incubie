@@ -182,7 +182,7 @@ namespace Incubie
             var players = GameController.Entities.Where(x => x.Type == ExileCore.Shared.Enums.EntityType.Player);
             var enumerable = players.ToList();
             DebugWindow.LogMsg($"Found {enumerable.Count} players", 20f);
-            if (enumerable.Count >= 6)
+            if (enumerable.Count >= Settings.PartyCount)
             {
                 var names = enumerable.Select(player => player.GetComponent<Player>().PlayerName).ToList();
                 File.AppendAllLines("partyinfo.txt", names);

@@ -21,7 +21,8 @@ namespace Incubie
         private int gemId;
         private bool foundGem;
         private bool foundIncub;
-        private int MinExperienceToNextLevel => Settings.MonsterCount * 5400;
+        private int maxIncubAvailableKills;
+        private uint maxExperienceToNextLevel;
         private uint startingExperienceToNextLevel;
         private ushort startingIncubatorKills;
         private int incubatorInventoryId;
@@ -76,7 +77,7 @@ namespace Incubie
             //         }
             //     }
             // }
-
+            gemExperienceGained = 0;
             if (foundGem)
             {
                 var experienceToNextLevel = GameController.IngameState.Data.ServerData
@@ -84,8 +85,9 @@ namespace Incubie
                     .GetComponent<Sockets>().SocketedGems[gemId].GemEntity.GetComponent<SkillGem>()
                     .ExperienceToNextLevel;
                 gemExperienceGained = startingExperienceToNextLevel - experienceToNextLevel;
-                var gemMilExpGained = (float) gemExperienceGained / 1000000;
-                Graphics.DrawText(gemMilExpGained.ToString(""), new Vector2(200, 200));
+                var gemMilExpGained = (float)gemExperienceGained / 1000000;
+                var maxGemMilExp = (float) maxExperienceToNextLevel / 1000000;
+                Graphics.DrawText($"{gemMilExpGained.ToString("")} / {maxGemMilExp.ToString("")}", new System.Numerics.Vector2(Settings.X, Settings.Y));
             }
 
             if (foundIncub)
@@ -99,19 +101,20 @@ namespace Incubie
                     return;
                 }
 
-                var incubatorKills = (ushort) mods.IncubatorKills;
-                killed = (ushort) (incubatorKills - startingIncubatorKills);
-                Graphics.DrawText(killed.ToString(), new Vector2(200, 230));
+                var incubatorKills = (ushort)mods.IncubatorKills;
+                killed = (ushort)(incubatorKills - startingIncubatorKills);
+                Graphics.DrawText($"{killed} / {maxIncubAvailableKills}", new System.Numerics.Vector2(Settings.X, Settings.Y + 30));
                 if (killed != 0 && Settings.ShowExpPerMonster)
                 {
-                    gemExpPerMonster = (float) gemExperienceGained / killed;
-                    Graphics.DrawText(gemExpPerMonster.ToString(""), new Vector2(200, 260));
+                    gemExpPerMonster = (float)gemExperienceGained / killed;
+                    Graphics.DrawText(gemExpPerMonster.ToString(""), new System.Numerics.Vector2(Settings.X, Settings.Y+60));
                 }
             }
         }
 
         private bool FindGem()
         {
+            maxExperienceToNextLevel = 0;
             for (var i = 0; i < GameController.IngameState.Data.ServerData.PlayerInventories.Count; i++)
             {
                 var inventory = GameController.IngameState.Data.ServerData.PlayerInventories[i];
@@ -125,24 +128,23 @@ namespace Incubie
 
                 for (var j = 0; j < gems.Count; j++)
                 {
-                    var gem = gems[0].GemEntity.GetComponent<SkillGem>();
-                    if (gem.ExperienceToNextLevel < MinExperienceToNextLevel)
+                    var gem = gems[j].GemEntity.GetComponent<SkillGem>();
+                    if (gem.ExperienceToNextLevel > maxExperienceToNextLevel)
                     {
-                        continue;
+                        gemId = j;
+                        gemInventoryId = i;
+                        maxExperienceToNextLevel = gem.ExperienceToNextLevel;
+                        startingExperienceToNextLevel = gem.ExperienceToNextLevel;
                     }
-
-                    gemId = j;
-                    gemInventoryId = i;
-                    startingExperienceToNextLevel = gem.ExperienceToNextLevel;
-                    return true;
                 }
             }
-
-            return false;
+            LogMessage($"Max gem exp to next level is:{maxExperienceToNextLevel}");
+            return maxExperienceToNextLevel > 0;
         }
 
         private bool FindIncub()
         {
+            maxIncubAvailableKills = 0;
             for (var i = 0; i < GameController.IngameState.Data.ServerData.PlayerInventories.Count; i++)
             {
                 var inventory = GameController.IngameState.Data.ServerData.PlayerInventories[i];
@@ -161,38 +163,37 @@ namespace Incubie
                     continue;
                 }
 
-                DebugWindow.LogMsg($"#Incubator: \"{name}\" Exists: {incubatorMaxCapacities.ContainsKey(name)}", 20f);
-                if (!incubatorMaxCapacities.ContainsKey(name) ||
-                    incubatorMaxCapacities.ContainsKey(name) &&
-                    incubatorMaxCapacities[name] - Settings.MonsterCount < kills)
+                if (incubatorMaxCapacities.ContainsKey(name))
                 {
-                    continue;
+                    int incubAvailableKills = incubatorMaxCapacities[name] - kills;
+                    if (incubAvailableKills > maxIncubAvailableKills)
+                    {
+                        maxIncubAvailableKills = incubAvailableKills;
+                        incubatorInventoryId = i;
+                        startingIncubatorKills = (ushort)kills;
+                    }
                 }
-
-                incubatorInventoryId = i;
-                startingIncubatorKills = (ushort) kills;
-                return true;
             }
 
-            return false;
+            return maxIncubAvailableKills > 0;
         }
 
         public override void AreaChange(AreaInstance area)
         {
-            Thread.Sleep(Settings.PauseTime);
-            var players = GameController.Entities.Where(x => x.Type == ExileCore.Shared.Enums.EntityType.Player);
-            var enumerable = players.ToList();
-            DebugWindow.LogMsg($"Found {enumerable.Count} players", 20f);
-            if (enumerable.Count >= Settings.PartyCount)
-            {
-                var names = enumerable.Select(player => player.GetComponent<Player>().PlayerName).ToList();
-                File.WriteAllLines("partyinfo.txt", names);
-            }
+            //Thread.Sleep(Settings.PauseTime);
+            //var players = GameController.Entities.Where(x => x.Type == ExileCore.Shared.Enums.EntityType.Player);
+            //var enumerable = players.ToList();
+            //DebugWindow.LogMsg($"Found {enumerable.Count} players", 20f);
+            //if (enumerable.Count >= Settings.PartyCount)
+            //{
+            //    var names = enumerable.Select(player => player.GetComponent<Player>().PlayerName).ToList();
+            //    File.WriteAllLines("partyinfo.txt", names);
+            //}
 
-            if (killed > 0)
-            {
-                DebugWindow.LogMsg($"#legion {gemExperienceGained},{killed},{gemExpPerMonster}", 20f);
-            }
+            //if (killed > 0)
+            //{
+            //    DebugWindow.LogMsg($"#legion {gemExperienceGained},{killed},{gemExpPerMonster}", 20f);
+            //}
 
             if (!area.IsHideout && !area.IsTown)
             {
